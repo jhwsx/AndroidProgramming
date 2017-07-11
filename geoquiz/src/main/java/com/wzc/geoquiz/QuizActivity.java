@@ -23,11 +23,14 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
     private int mCurrentIndex;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
-
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt("current_index");
+        }
         mContext = QuizActivity.this;
         mBtnAnswerTrue = (Button) findViewById(R.id.btn_answer_true);
         mBtnAnswerFalse = (Button) findViewById(R.id.btn_answer_false);
@@ -67,9 +70,16 @@ public class QuizActivity extends AppCompatActivity {
         int resId;
         if (isUserPressedTrue == mQuestionArray[mCurrentIndex].isQuestionAnswer()) {
             resId = R.string.toast_correct;
-        }  else {
+        } else {
             resId = R.string.toast_incorrect;
         }
         Toast.makeText(mContext, resId, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt("current_index", mCurrentIndex);
+        super.onSaveInstanceState(outState);
+
     }
 }
