@@ -26,13 +26,13 @@ public class QuizActivity extends AppCompatActivity {
     };
     private int mCurrentIndex;
     private ImageButton mBtnPrev;
-
+    private static final String KEY_CURRENT_INDEX = "current_index";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
         if (savedInstanceState != null) {
-            mCurrentIndex = savedInstanceState.getInt("current_index");
+            mCurrentIndex = savedInstanceState.getInt(KEY_CURRENT_INDEX,0);
         }
         mContext = QuizActivity.this;
         mBtnAnswerTrue = (Button) findViewById(R.id.btn_answer_true);
@@ -99,7 +99,7 @@ public class QuizActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putInt("current_index", mCurrentIndex);
+        outState.putInt(KEY_CURRENT_INDEX, mCurrentIndex);
         super.onSaveInstanceState(outState);
 
     }
