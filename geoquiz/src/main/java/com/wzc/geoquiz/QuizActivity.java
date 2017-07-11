@@ -1,11 +1,12 @@
 package com.wzc.geoquiz;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,7 +15,7 @@ public class QuizActivity extends AppCompatActivity {
     private Button mBtnAnswerTrue;
     private Button mBtnAnswerFalse;
     private TextView mTvQuestion;
-    private Button mBtnNext;
+    private ImageButton mBtnNext;
     private Context mContext;
     private Question[] mQuestionArray = new Question[]{
             new Question(R.string.question_oceans, true),
@@ -24,7 +25,7 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
     private int mCurrentIndex;
-    private Button mBtnPrev;
+    private ImageButton mBtnPrev;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +38,8 @@ public class QuizActivity extends AppCompatActivity {
         mBtnAnswerTrue = (Button) findViewById(R.id.btn_answer_true);
         mBtnAnswerFalse = (Button) findViewById(R.id.btn_answer_false);
         mTvQuestion = (TextView) findViewById(R.id.tv_question);
-        mBtnNext = (Button) findViewById(R.id.btn_next);
-        mBtnPrev = (Button) findViewById(R.id.btn_prev);
+        mBtnNext = (ImageButton) findViewById(R.id.btn_next);
+        mBtnPrev = (ImageButton) findViewById(R.id.btn_prev);
 
         updateQuestion();
 
