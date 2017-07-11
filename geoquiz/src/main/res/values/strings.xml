@@ -3,6 +3,7 @@
     <string name="button_true_text">TRUE</string>
     <string name="button_false_text">FALSE</string>
     <string name="button_next_text">NEXT</string>
+    <string name="button_prev_text">PREV</string>
     <string name="toast_correct">Correct</string>
     <string name="toast_incorrect">Incorrect</string>
     <string name="question_oceans">The Pacific Ocean is larger than the Atlantic Ocean.</string>
