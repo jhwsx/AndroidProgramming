@@ -12,12 +12,9 @@ import android.widget.Toast;
 
 public class QuizActivity extends AppCompatActivity {
 
-    private Button mBtnAnswerTrue;
-    private Button mBtnAnswerFalse;
     private TextView mTvQuestion;
-    private ImageButton mBtnNext;
     private Context mContext;
-    private Question[] mQuestionArray = new Question[]{
+    private final Question[] mQuestionArray = new Question[]{
             new Question(R.string.question_oceans, true),
             new Question(R.string.question_mideast, false),
             new Question(R.string.question_africa, false),
@@ -25,8 +22,8 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
     private int mCurrentIndex;
-    private ImageButton mBtnPrev;
     private static final String KEY_CURRENT_INDEX = "current_index";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,29 +32,29 @@ public class QuizActivity extends AppCompatActivity {
             mCurrentIndex = savedInstanceState.getInt(KEY_CURRENT_INDEX,0);
         }
         mContext = QuizActivity.this;
-        mBtnAnswerTrue = (Button) findViewById(R.id.btn_answer_true);
-        mBtnAnswerFalse = (Button) findViewById(R.id.btn_answer_false);
+        Button btnAnswerTrue = (Button) findViewById(R.id.btn_answer_true);
+        Button btnAnswerFalse = (Button) findViewById(R.id.btn_answer_false);
         mTvQuestion = (TextView) findViewById(R.id.tv_question);
-        mBtnNext = (ImageButton) findViewById(R.id.btn_next);
-        mBtnPrev = (ImageButton) findViewById(R.id.btn_prev);
+        ImageButton btnNext = (ImageButton) findViewById(R.id.btn_next);
+        ImageButton btnPrev = (ImageButton) findViewById(R.id.btn_prev);
 
         updateQuestion();
 
-        mBtnAnswerTrue.setOnClickListener(new View.OnClickListener() {
+        btnAnswerTrue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkAnswers(true);
             }
         });
 
-        mBtnAnswerFalse.setOnClickListener(new View.OnClickListener() {
+        btnAnswerFalse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkAnswers(false);
             }
         });
 
-        mBtnNext.setOnClickListener(new View.OnClickListener() {
+        btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionArray.length;
@@ -73,7 +70,7 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
-        mBtnPrev.setOnClickListener(new View.OnClickListener() {
+        btnPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCurrentIndex = (mCurrentIndex - 1) >= 0 ? mCurrentIndex - 1 : mQuestionArray.length-1;
@@ -84,6 +81,7 @@ public class QuizActivity extends AppCompatActivity {
     }
 
     private void updateQuestion() {
+//        Log.d(TAG, "Updating question text for question #" + mCurrentIndex, new Exception());
         mTvQuestion.setText(mQuestionArray[mCurrentIndex].getQuestionContentResId());
     }
 
