@@ -11,15 +11,18 @@ import java.util.UUID;
  * Crime详情页面
  */
 public class CrimeActivity extends SingleFragmentActivity {
-    public static final String EXTRA_CRIME_ID = "com.wzc.criminalintent.crime_id";
+    private static final String EXTRA_CRIME_ID = "com.wzc.criminalintent.crime_id";
 
-    public static Intent newIntent(Context context,UUID crimeId){
+    public static Intent newIntent(Context context, UUID crimeId) {
         Intent intent = new Intent(context, CrimeActivity.class);
         intent.putExtra(EXTRA_CRIME_ID, crimeId);
         return intent;
     }
+
     @Override
     protected Fragment createFragment() {
-        return new CrimeFragment();
+        UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+//        return new CrimeFragment();
+        return CrimeFragment.newInstance(crimeId);
     }
 }
