@@ -11,8 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
+
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Created by wzc on 2017/7/17.
@@ -23,7 +26,7 @@ public class CrimeListFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private CrimeAdapter mAdapter;
-
+    private static final int REQUEST_CRIME = 1;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -115,7 +118,21 @@ public class CrimeListFragment extends Fragment {
 //                    .show();
 //            Intent intent = new Intent(getActivity(),CrimeActivity.class);
             Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
-            startActivity(intent);
+//            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CRIME);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CRIME) {
+            switch (resultCode) {
+                case RESULT_OK:
+                    String dataStringExtra = data.getStringExtra(CrimeFragment.EXTRA_RETURN_RESULT);
+                    Toast.makeText(getActivity(), dataStringExtra, Toast.LENGTH_LONG).show();
+                    break;
+            }
         }
     }
 }

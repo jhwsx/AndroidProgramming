@@ -1,5 +1,7 @@
 package com.wzc.criminalintent;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,6 +26,7 @@ import java.util.UUID;
  */
 
 public class CrimeFragment extends Fragment {
+    public static final String EXTRA_RETURN_RESULT = "return_result";
     private static final String ARG_CRIME_ID = "crime_id";
     private Crime mCrime;
     private EditText mTitleField;
@@ -74,8 +77,13 @@ public class CrimeFragment extends Fragment {
 
         mDateButton = (Button) view.findViewById(R.id.crime_date);
         mDateButton.setText(mCrime.getDate().toString());
-        mDateButton.setEnabled(false);
-
+//        mDateButton.setEnabled(false);
+        mDateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                returnResult();
+            }
+        });
         mSolvedCheckBox = (CheckBox) view.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -90,5 +98,11 @@ public class CrimeFragment extends Fragment {
 
     private String formatDate(Date date) {
         return new SimpleDateFormat("EEE, yyyy/MM/dd HH:mm:ss", Locale.US).format(date);
+    }
+
+    public void returnResult(){
+        Intent data = new Intent();
+        data.putExtra(EXTRA_RETURN_RESULT, "我是从CrimeFragment返回的信息");
+        getActivity().setResult(Activity.RESULT_OK,data);
     }
 }
