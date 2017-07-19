@@ -82,6 +82,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mSolvedCheckBox.setChecked(isChecked);
+                mCrime.setSolved(isChecked);
             }
         });
         return view;
