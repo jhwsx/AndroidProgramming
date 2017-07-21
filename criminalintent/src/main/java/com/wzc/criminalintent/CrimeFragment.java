@@ -78,12 +78,12 @@ public class CrimeFragment extends Fragment {
         mDateButton = (Button) view.findViewById(R.id.crime_date);
         mDateButton.setText(mCrime.getDate().toString());
 //        mDateButton.setEnabled(false);
-        mDateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                returnResult();
-            }
-        });
+//        mDateButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                returnResult();
+//            }
+//        });
         mSolvedCheckBox = (CheckBox) view.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -105,4 +105,6 @@ public class CrimeFragment extends Fragment {
         data.putExtra(EXTRA_RETURN_RESULT, "我是从CrimeFragment返回的信息");
         getActivity().setResult(Activity.RESULT_OK,data);
     }
+
+
 }

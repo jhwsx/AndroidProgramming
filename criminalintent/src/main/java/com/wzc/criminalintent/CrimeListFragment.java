@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -117,8 +116,10 @@ public class CrimeListFragment extends Fragment {
 //                    mCrime.getTitle() + "clicked", Toast.LENGTH_SHORT)
 //                    .show();
 //            Intent intent = new Intent(getActivity(),CrimeActivity.class);
-            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+//            Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
 //            startActivity(intent);
+//            startActivityForResult(intent, REQUEST_CRIME);
+            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
             startActivityForResult(intent, REQUEST_CRIME);
         }
     }
@@ -129,9 +130,11 @@ public class CrimeListFragment extends Fragment {
         if (requestCode == REQUEST_CRIME) {
             switch (resultCode) {
                 case RESULT_OK:
-                    String dataStringExtra = data.getStringExtra(CrimeFragment.EXTRA_RETURN_RESULT);
-                    Toast.makeText(getActivity(), dataStringExtra, Toast.LENGTH_LONG).show();
-                    break;
+//                    String dataStringExtra = data.getStringExtra(CrimeFragment.EXTRA_RETURN_RESULT);
+//                    Toast.makeText(getActivity(), dataStringExtra, Toast.LENGTH_LONG).show();
+//                    int current = data.getIntExtra("current",0);
+//                    mRecyclerView.smoothScrollToPosition(current);
+//                    break;
             }
         }
     }
