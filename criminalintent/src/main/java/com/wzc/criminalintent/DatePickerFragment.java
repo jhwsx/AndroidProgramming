@@ -59,7 +59,7 @@ public class DatePickerFragment extends DialogFragment {
                 int month = mDatePicker.getMonth();
                 int day = mDatePicker.getDayOfMonth();
                 Date date = new GregorianCalendar(year, month, day, hour, minute).getTime();
-                if (Util.isPad(getActivity())) {
+                if (!Util.isPad(getActivity())) {
                     returnResult(date);
                     getActivity().finish();
                 } else {
