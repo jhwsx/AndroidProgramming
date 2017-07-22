@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<DatePicker xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/dialog_date_date_picker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:calendarViewShown="false">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
-</DatePicker>
+    <TextView
+        android:id="@+id/dialog_date_date_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/date_picker_title"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:textSize="16sp"/>
+    <DatePicker
+        android:id="@+id/dialog_date_date_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:calendarViewShown="false"/>
+    <Button
+        android:layout_margin="8dp"
+        android:id="@+id/dialog_date_date_ok_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        style="?android:attr/buttonBarButtonStyle"
+        android:text="@string/date_picker_ok_button"/>
+</LinearLayout>
