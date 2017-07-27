@@ -125,6 +125,7 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mRecyclerView.setAdapter(mAdapter);
         } else {
+            mAdapter.setCrimes(crimes);
             mAdapter.notifyDataSetChanged();
         }
         // 解决新建crime记录后,使用回退按钮回到CrimeListActivity页面,子标题显示的总记录数不会更新的问题
@@ -151,6 +152,9 @@ public class CrimeListFragment extends Fragment {
             mCrimes = crimes;
         }
 
+        public void setCrimes(List<Crime> crimes){
+            mCrimes = crimes;
+        }
 
         @Override
         public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType) {

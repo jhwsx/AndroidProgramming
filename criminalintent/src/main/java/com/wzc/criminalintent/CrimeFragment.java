@@ -133,6 +133,13 @@ public class CrimeFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        // 在这个方法里进行用户编辑完后的数据刷新
+        CrimeLab.getInstance(getActivity()).updateCrime(mCrime);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_crime, menu);
