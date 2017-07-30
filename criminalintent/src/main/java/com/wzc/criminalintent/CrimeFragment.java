@@ -1,5 +1,6 @@
 package com.wzc.criminalintent;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -10,6 +11,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -23,10 +26,13 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -44,6 +50,7 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
+    private static final int REQUEST_CALL = 3;
     private static final String DIALOG_TIME = "DialogTime";
     private Crime mCrime;
     private EditText mTitleField;
@@ -52,6 +59,7 @@ public class CrimeFragment extends Fragment {
     private Button mTimeButton;
     private Button mReportButton;
     private Button mSuspectButton;
+    private Button mCallSuspectButton;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         CrimeFragment fragment = new CrimeFragment();
@@ -142,12 +150,20 @@ public class CrimeFragment extends Fragment {
         mReportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
-                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
-                intent = Intent.createChooser(intent, getString(R.string.send_report)); // 用作选择器的标题
-                startActivity(intent);
+                // 使用ShareCompat类的静态内部类来发送信息
+                ShareCompat.IntentBuilder.from(getActivity())
+                        .setType("text/plain")
+                        .setText(getCrimeReport())
+                        .setSubject(getString(R.string.crime_report_subject))
+                        .setChooserTitle(R.string.send_report)
+                        .startChooser();
+
+//                Intent intent = new Intent(Intent.ACTION_SEND);
+//                intent.setType("text/plain");
+//                intent.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+//                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
+//                intent = Intent.createChooser(intent, getString(R.string.send_report)); // 用作选择器的标题
+//                startActivity(intent);
             }
         });
 
@@ -157,7 +173,7 @@ public class CrimeFragment extends Fragment {
         mSuspectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivityForResult(pickContact,REQUEST_CONTACT);
+                startActivityForResult(pickContact, REQUEST_CONTACT);
             }
         });
 
@@ -169,7 +185,51 @@ public class CrimeFragment extends Fragment {
         if (packageManager.resolveActivity(pickContact, PackageManager.MATCH_DEFAULT_ONLY) == null) {
             mSuspectButton.setEnabled(false);
         }
+
+        mCallSuspectButton = (Button) view.findViewById(R.id.call_suspect);
+        mCallSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<String> permissionList = new ArrayList<String>();
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    permissionList.add(Manifest.permission.CALL_PHONE);
+                }
+                if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    permissionList.add(Manifest.permission.READ_CONTACTS);
+                }
+                if (!permissionList.isEmpty()) {
+                    requestPermissions(permissionList.toArray(new String[permissionList.size()]), REQUEST_CALL);
+                } else {
+                    dialPhone();
+                }
+
+            }
+        });
         return view;
+
+    }
+
+    private void dialPhone() {
+
+        Cursor cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
+                new String[]{mCrime.getSuspectId()}, null);
+        try {
+            if (cursor.getCount() == 0) {
+                return;
+            }
+            cursor.moveToFirst();
+            String phoneNumber = cursor.getString(0);
+            Uri numberUri = Uri.parse("tel:" + phoneNumber);
+            Intent intent = new Intent(Intent.ACTION_DIAL, numberUri);
+            startActivity(intent);
+        } finally {
+            cursor.close();
+        }
+
 
     }
 
@@ -222,8 +282,8 @@ public class CrimeFragment extends Fragment {
                 if (data != null) {
                     Uri contactUri = data.getData();
                     // 查询字段
-                    String[] queryFields = {ContactsContract.Contacts.DISPLAY_NAME};
-                    Cursor cursor = getActivity().getContentResolver().query(contactUri, queryFields, null,  null, null);
+                    String[] queryFields = {ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
+                    Cursor cursor = getActivity().getContentResolver().query(contactUri, queryFields, null, null, null);
                     try {
                         // 执行查询
 
@@ -233,8 +293,10 @@ public class CrimeFragment extends Fragment {
 
                         cursor.moveToFirst();
                         // 取出第一条数据即可
-                        String suspect = cursor.getString(0);
+                        String suspect = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                        String suspectId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
                         mCrime.setSuspect(suspect);
+                        mCrime.setSuspectId(suspectId);
                         mSuspectButton.setText(mCrime.getSuspect());
                     } finally {
                         cursor.close();
@@ -299,12 +361,40 @@ public class CrimeFragment extends Fragment {
         if (suspect == null) {
             suspect = getString(R.string.crime_report_no_suspect);
         } else {
-            suspect = getString(R.string.crime_report_suspect);
+            suspect = getString(R.string.crime_report_suspect, suspect);
         }
 
         String report = getString(R.string.crime_report,
                 mCrime.getTitle(), dateString, solvedString, suspect);
 
         return report;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        int count = 0;
+        if (requestCode == REQUEST_CALL && permissions.length > 0){
+            for (int i = 0; i < permissions.length; i++) {
+                if (permissions[i] .equals(Manifest.permission.READ_CONTACTS)  && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getActivity(),"you has allowed the app to read contacts",Toast.LENGTH_SHORT).show();
+                    count++;
+                }
+                if (permissions[i].equals(Manifest.permission.CALL_PHONE) && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getActivity(),"you has allowed the app to call phone",Toast.LENGTH_SHORT).show();
+                    count++;
+                }
+                if (count == 2) {
+                    dialPhone();
+                }
+            }
+        }
+//        Log.e("tagtag", "requestCode = " + requestCode);
+//        for (int i = 0; i < permissions.length; i++) {
+//            Log.e("tagtag", permissions[i]);
+//        }
+//        for (int i = 0; i < grantResults.length; i++) {
+//            Log.e("tagtag", grantResults[i] + "");
+//        }
     }
 }
