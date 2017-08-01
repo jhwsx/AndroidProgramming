@@ -4,9 +4,11 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,8 +28,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -50,7 +55,8 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
-    private static final int REQUEST_CALL = 3;
+    private static final int REQUEST_CALLPHONE_READCONTACTS_PERMISSION = 3;
+    private static final int REQUEST_PHOTO = 4;
     private static final String DIALOG_TIME = "DialogTime";
     private Crime mCrime;
     private EditText mTitleField;
@@ -60,6 +66,9 @@ public class CrimeFragment extends Fragment {
     private Button mReportButton;
     private Button mSuspectButton;
     private Button mCallSuspectButton;
+    private ImageView mPhotoView;
+    private ImageButton mPhotoButton;
+    private File mPhotoFile;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         CrimeFragment fragment = new CrimeFragment();
@@ -79,6 +88,8 @@ public class CrimeFragment extends Fragment {
         Bundle arguments = getArguments();
         UUID crimeId = (UUID) arguments.getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.getInstance(getActivity()).getCrime(crimeId);
+        // 获取保存照片文件的存储位置
+        mPhotoFile = CrimeLab.getInstance(getActivity()).getPhotoFile(mCrime);
 
     }
 
@@ -200,13 +211,32 @@ public class CrimeFragment extends Fragment {
                     permissionList.add(Manifest.permission.READ_CONTACTS);
                 }
                 if (!permissionList.isEmpty()) {
-                    requestPermissions(permissionList.toArray(new String[permissionList.size()]), REQUEST_CALL);
+                    requestPermissions(permissionList.toArray(new String[permissionList.size()]), REQUEST_CALLPHONE_READCONTACTS_PERMISSION);
                 } else {
                     dialPhone();
                 }
 
             }
         });
+        mPhotoButton = (ImageButton) view.findViewById(R.id.crime_camera);
+        // 检查一下是否可以拍照(有相机应用并且有存储目录存在)
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        boolean canTakePhoto = mPhotoFile != null
+                && captureImage.resolveActivity(packageManager) != null;
+        mPhotoButton.setEnabled(canTakePhoto);
+        if (canTakePhoto) {
+            // 把指向存储路径的uri,传给intent
+            Uri uri = Uri.fromFile(mPhotoFile);
+            captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        }
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(captureImage, REQUEST_PHOTO);
+            }
+        });
+        mPhotoView = (ImageView) view.findViewById(R.id.crime_photo);
+        updatePhotoView();
         return view;
 
     }
@@ -304,6 +334,9 @@ public class CrimeFragment extends Fragment {
 
                 }
                 break;
+            case REQUEST_PHOTO:
+                updatePhotoView();
+                break;
         }
     }
 
@@ -370,18 +403,27 @@ public class CrimeFragment extends Fragment {
         return report;
     }
 
+    private void updatePhotoView() {
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mPhotoView.setImageBitmap(null);
+        } else {
+            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), getActivity());
+            mPhotoView.setImageBitmap(bitmap);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         int count = 0;
-        if (requestCode == REQUEST_CALL && permissions.length > 0){
+        if (requestCode == REQUEST_CALLPHONE_READCONTACTS_PERMISSION && permissions.length > 0) {
             for (int i = 0; i < permissions.length; i++) {
-                if (permissions[i] .equals(Manifest.permission.READ_CONTACTS)  && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getActivity(),"you has allowed the app to read contacts",Toast.LENGTH_SHORT).show();
+                if (permissions[i].equals(Manifest.permission.READ_CONTACTS) && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getActivity(), "you has allowed the app to read contacts", Toast.LENGTH_SHORT).show();
                     count++;
                 }
                 if (permissions[i].equals(Manifest.permission.CALL_PHONE) && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getActivity(),"you has allowed the app to call phone",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "you has allowed the app to call phone", Toast.LENGTH_SHORT).show();
                     count++;
                 }
                 if (count == 2) {

@@ -4,10 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 
 import com.wzc.criminalintent.database.CrimeBaseHelper;
 import com.wzc.criminalintent.database.CrimeCursorWrapper;
 import com.wzc.criminalintent.database.CrimeDbSchema.CrimeTable;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -103,6 +106,13 @@ public class CrimeLab {
         );
     }
 
+    public File getPhotoFile(Crime crime){
+        File externalFilesDir = mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        if (externalFilesDir == null) {
+            return null;
+        }
+        return new File(externalFilesDir, crime.getPhotoFileName());
+    }
 //    private Cursor queryCrimes(String whereClause, String[] whereArgs){
     private CrimeCursorWrapper queryCrimes(String whereClause, String[] whereArgs){
         Cursor cursor = mDatabase.query(
