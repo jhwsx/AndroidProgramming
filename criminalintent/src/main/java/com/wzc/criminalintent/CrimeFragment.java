@@ -24,6 +24,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -52,6 +53,7 @@ public class CrimeFragment extends Fragment {
     public static final String EXTRA_RETURN_RESULT = "return_result";
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final String DIALOG_PHOTO = "DialogPhoto";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
@@ -236,7 +238,17 @@ public class CrimeFragment extends Fragment {
             }
         });
         mPhotoView = (ImageView) view.findViewById(R.id.crime_photo);
+
         updatePhotoView();
+        // 点击mPhotoView可以查看缩略图
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getFragmentManager();
+                PhotoFragment dialog = PhotoFragment.newInstance(mPhotoFile.getPath());
+                dialog.show(fragmentManager, DIALOG_PHOTO);
+            }
+        });
         return view;
 
     }
@@ -335,7 +347,7 @@ public class CrimeFragment extends Fragment {
                 }
                 break;
             case REQUEST_PHOTO:
-                updatePhotoView();
+//                updatePhotoView();
                 break;
         }
     }
@@ -404,12 +416,25 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updatePhotoView() {
-        if (mPhotoFile == null || !mPhotoFile.exists()) {
-            mPhotoView.setImageBitmap(null);
-        } else {
-            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), getActivity());
-            mPhotoView.setImageBitmap(bitmap);
-        }
+        // 设置这个监听,在布局切换时,就会更新照片
+        mPhotoView.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (mPhotoFile == null || !mPhotoFile.exists()) {
+                            mPhotoView.setImageBitmap(null);
+                            mPhotoView.setEnabled(false);
+                        } else {
+                            int destWidth = mPhotoView.getWidth();
+                            int destHeight = mPhotoView.getHeight();
+                            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), destWidth, destHeight);
+                            mPhotoView.setImageBitmap(bitmap);
+                            mPhotoView.setEnabled(true);
+                        }
+//                        mPhotoView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                    }
+                });
     }
 
     @Override

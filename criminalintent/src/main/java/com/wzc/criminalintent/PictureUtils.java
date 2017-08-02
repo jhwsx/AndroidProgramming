@@ -7,6 +7,7 @@ import android.graphics.Point;
 
 /**
  * Created by wzc on 2017/8/1.
+ * http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
  */
 
 public class PictureUtils {
