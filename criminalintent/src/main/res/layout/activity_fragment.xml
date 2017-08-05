@@ -5,7 +5,6 @@
     android:id="@+id/fragment_container"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.wzc.criminalintent.CrimeActivity">
+    android:layout_height="match_parent">
 
 </FrameLayout>

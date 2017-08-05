@@ -1,6 +1,7 @@
 package com.wzc.criminalintent;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -71,13 +72,24 @@ public class CrimeFragment extends Fragment {
     private ImageView mPhotoView;
     private ImageButton mPhotoButton;
     private File mPhotoFile;
+    private Callbacks mCallbacks;
 
+    public interface Callbacks {
+        // 修改在平板中,修改CrimeFragment中的内容时,左边列表并不会立即刷新的问题
+        void onCrimeUpdated(Crime crime);
+    }
     public static CrimeFragment newInstance(UUID crimeId) {
         CrimeFragment fragment = new CrimeFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        mCallbacks = (Callbacks) activity;
     }
 
     @Override
@@ -110,6 +122,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -156,6 +169,7 @@ public class CrimeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mSolvedCheckBox.setChecked(isChecked);
                 mCrime.setSolved(isChecked);
+                updateCrime();
             }
         });
 
@@ -253,26 +267,33 @@ public class CrimeFragment extends Fragment {
 
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
     private void dialPhone() {
-
-        Cursor cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
-                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
-                new String[]{mCrime.getSuspectId()}, null);
-        try {
-            if (cursor.getCount() == 0) {
-                return;
+        if (mCrime.getSuspectId() == null) {
+            Toast.makeText(getActivity(),"please choose suspect first.",Toast.LENGTH_SHORT).show();
+        } else {
+            Cursor cursor = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
+                    new String[]{mCrime.getSuspectId()}, null);
+            try {
+                if (cursor.getCount() == 0) {
+                    return;
+                }
+                cursor.moveToFirst();
+                String phoneNumber = cursor.getString(0);
+                Uri numberUri = Uri.parse("tel:" + phoneNumber);
+                Intent intent = new Intent(Intent.ACTION_DIAL, numberUri);
+                startActivity(intent);
+            } finally {
+                cursor.close();
             }
-            cursor.moveToFirst();
-            String phoneNumber = cursor.getString(0);
-            Uri numberUri = Uri.parse("tel:" + phoneNumber);
-            Intent intent = new Intent(Intent.ACTION_DIAL, numberUri);
-            startActivity(intent);
-        } finally {
-            cursor.close();
         }
-
-
     }
 
     @Override
@@ -314,11 +335,13 @@ public class CrimeFragment extends Fragment {
                 mCrime.setDate(date);
                 updateDate();
                 updateTime();
+                updateCrime();
                 break;
             case REQUEST_TIME:
                 Time time = (Time) data.getSerializableExtra(TimerPickerFragment.EXTRA_TIME);
                 updateTime(time);
                 updateDate();
+                updateCrime();
                 break;
             case REQUEST_CONTACT:
                 if (data != null) {
@@ -340,6 +363,7 @@ public class CrimeFragment extends Fragment {
                         mCrime.setSuspect(suspect);
                         mCrime.setSuspectId(suspectId);
                         mSuspectButton.setText(mCrime.getSuspect());
+                        updateCrime();
                     } finally {
                         cursor.close();
                     }
@@ -430,6 +454,7 @@ public class CrimeFragment extends Fragment {
                             Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), destWidth, destHeight);
                             mPhotoView.setImageBitmap(bitmap);
                             mPhotoView.setEnabled(true);
+                            updateCrime();
                         }
 //                        mPhotoView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
@@ -463,5 +488,10 @@ public class CrimeFragment extends Fragment {
 //        for (int i = 0; i < grantResults.length; i++) {
 //            Log.e("tagtag", grantResults[i] + "");
 //        }
+    }
+
+    private void updateCrime() {
+        CrimeLab.getInstance(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 }

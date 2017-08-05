@@ -15,10 +15,10 @@ import java.util.UUID;
 
 /**
  * Created by wzc on 2017/7/21.
- *
  */
 
-public class CrimePagerActivity extends AppCompatActivity {
+public class CrimePagerActivity extends AppCompatActivity
+        implements CrimeFragment.Callbacks {
     private static final String EXTRA_CRIME_ID = "com.wzc.criminalintent.crime_id";
     private ViewPager mViewPager;
     private List<Crime> mCrimes;
@@ -51,10 +51,15 @@ public class CrimePagerActivity extends AppCompatActivity {
         });
 
         for (int i = 0; i < mCrimes.size(); i++) {
-            if (mCrimes.get(i).getId().equals(crimeId)){
+            if (mCrimes.get(i).getId().equals(crimeId)) {
                 mViewPager.setCurrentItem(i);
             }
         }
+    }
+
+    @Override
+    public void onCrimeUpdated(Crime crime) {
+
     }
 
     //    @Override
