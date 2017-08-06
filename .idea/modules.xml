@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AndroidProgramming.iml" filepath="$PROJECT_DIR$/AndroidProgramming.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/beatbox/beatbox.iml" filepath="$PROJECT_DIR$/beatbox/beatbox.iml" />
       <module fileurl="file://$PROJECT_DIR$/criminalintent/criminalintent.iml" filepath="$PROJECT_DIR$/criminalintent/criminalintent.iml" />
       <module fileurl="file://$PROJECT_DIR$/geoquiz/geoquiz.iml" filepath="$PROJECT_DIR$/geoquiz/geoquiz.iml" />
     </modules>
