@@ -2,10 +2,24 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <!--工具栏-->
+        <item name="colorPrimary">@color/red</item>
+        <!--状态栏,只有Lollipop之后的系统支持状态栏主题色-->
+        <item name="colorPrimaryDark">@color/dark_red</item>
+        <!--和colorPrimary形成反差,主要用于给EditText这样的组件着色,按钮组件不支持着色-->
+        <item name="colorAccent">@color/gray</item>
+        <!--窗口背景-->
+        <item name="android:colorBackground">@color/soothing_blue</item>
+        <!--按钮样式-->
+        <item name="buttonStyle">@style/BeatBoxButton</item>
     </style>
-
+    <style name="BeatBoxButton" parent="android:style/Widget.Holo.Button">
+        <item name="android:background">@color/dark_blue</item>
+    </style>
+    <!--<style name="BeatBoxButton.Strong">-->
+        <!--<item name="android:textStyle">bold</item>-->
+    <!--</style>-->
+    <!--<style name="StrongBeatBoxButton" parent="BeatBoxButton">-->
+        <!--<item name="android:textStyle">bold</item>-->
+    <!--</style>-->
 </resources>
