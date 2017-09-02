@@ -1,5 +1,6 @@
 package com.wzc.photogallery;
 
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,7 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class PhotoGalleryFragment extends Fragment {
     private FetchItemTask mFetchItemTask;
     private PhotoAdapter mAdapter;
     private int mPage = 1;
+    private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
+
     public static PhotoGalleryFragment newInstance() {
         PhotoGalleryFragment fragment = new PhotoGalleryFragment();
         return fragment;
@@ -45,9 +48,16 @@ public class PhotoGalleryFragment extends Fragment {
         setRetainInstance(true);
         mFetchItemTask = new FetchItemTask();
         mFetchItemTask.execute(mPage);
+
+        mThumbnailDownloader = new ThumbnailDownloader<>();
+        // 问题:为什么先调用start()再调用getLooper(),自己看一下源码.
+        mThumbnailDownloader.start();
+        mThumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
     }
 
-    private int mGridColumnWidthDp = 80;
+    private int mGridColumnWidthDp = 120;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -89,12 +99,11 @@ public class PhotoGalleryFragment extends Fragment {
 
                     mPage++;
                     if (mPage > 10) {
-                        Toast.makeText(getActivity(),"No more data.",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(), "No more data.", Toast.LENGTH_LONG).show();
                         return;
                     }
                     Log.d(TAG, "onScrolled() 请求第" + mPage + "页");
                     new FetchItemTask().execute(mPage);
-                    mAdapter.notifyDataSetChanged();
                 }
             }
         });
@@ -107,6 +116,13 @@ public class PhotoGalleryFragment extends Fragment {
     public void onStop() {
         super.onStop();
         mFetchItemTask.cancel(false);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mThumbnailDownloader.quit();
+        Log.i(TAG, "Background thread destroyed");
     }
 
     private void setupAdapter() {
@@ -129,13 +145,18 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            TextView textView = new TextView(getActivity());
-            return new PhotoHolder(textView);
+//            TextView textView = new TextView(getActivity());
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_item, parent, false);
+            return new PhotoHolder(view);
         }
 
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
-            holder.bindGalleryItem(mGalleryItems.get(position));
+            GalleryItem galleryItem = mGalleryItems.get(position);
+//            holder.bindGalleryItem(galleryItem);
+            Drawable drawable = getResources().getDrawable(R.drawable.bill_up_close);
+            holder.bindDrawable(drawable);
+            mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
         }
 
         @Override
@@ -146,15 +167,21 @@ public class PhotoGalleryFragment extends Fragment {
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
 
-        private TextView mTitleTextView;
+        //        private TextView mTitleTextView;
+        private ImageView mItemImageView;
 
         public PhotoHolder(View itemView) {
             super(itemView);
-            mTitleTextView = (TextView) itemView;
+//            mTitleTextView = (TextView) itemView;
+            mItemImageView = (ImageView) itemView.findViewById(R.id.fragment_photo_gallery_image_view);
         }
 
         public void bindGalleryItem(GalleryItem galleryItem) {
-            mTitleTextView.setText(galleryItem.toString());
+//            mTitleTextView.setText(galleryItem.toString());
+        }
+
+        public void bindDrawable(Drawable drawable) {
+            mItemImageView.setImageDrawable(drawable);
         }
     }
 

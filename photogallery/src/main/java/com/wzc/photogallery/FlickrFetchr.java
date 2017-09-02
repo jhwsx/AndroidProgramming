@@ -112,11 +112,11 @@ public class FlickrFetchr {
             }
             String caption = itemJSONObject.getString("title");
             galleryItem.setCaption(caption);
-//            if (!itemJSONObject.has("url_s")) { // 这个参数值告诉Flickr：如有小尺寸图片，也一并返回其URL
-//                continue;
-//            }
-//            String url = itemJSONObject.getString("url_s");
-//            galleryItem.setUrl(url);
+            if (!itemJSONObject.has("url_s")) { // 这个参数值告诉Flickr：如有小尺寸图片，也一并返回其URL
+                continue;
+            }
+            String url = itemJSONObject.getString("url_s");
+            galleryItem.setUrl(url);
             items.add(galleryItem);
         }
 
