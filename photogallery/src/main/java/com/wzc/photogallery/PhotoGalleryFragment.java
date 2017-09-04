@@ -1,8 +1,11 @@
 package com.wzc.photogallery;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -48,8 +51,16 @@ public class PhotoGalleryFragment extends Fragment {
         setRetainInstance(true);
         mFetchItemTask = new FetchItemTask();
         mFetchItemTask.execute(mPage);
-
-        mThumbnailDownloader = new ThumbnailDownloader<>();
+        Handler repsonseHandler = new Handler();
+        mThumbnailDownloader = new ThumbnailDownloader<>(repsonseHandler);
+        mThumbnailDownloader.setThumbnailDownloadListener(
+                new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
+                    @Override
+                    public void onThumbnailDownloaded(PhotoHolder target, Bitmap thumbnail) {
+                        BitmapDrawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                        target.bindDrawable(drawable);
+                    }
+                });
         // 问题:为什么先调用start()再调用getLooper(),自己看一下源码.
         mThumbnailDownloader.start();
         mThumbnailDownloader.getLooper();
@@ -116,6 +127,12 @@ public class PhotoGalleryFragment extends Fragment {
     public void onStop() {
         super.onStop();
         mFetchItemTask.cancel(false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mThumbnailDownloader.clearQueue();
     }
 
     @Override
