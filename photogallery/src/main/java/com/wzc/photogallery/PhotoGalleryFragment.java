@@ -48,7 +48,7 @@ public class PhotoGalleryFragment extends Fragment {
         super.onCreate(savedInstanceState);
         // Control whether a fragment instance is retained across Activity
         // re-creation (such as from a configuration change).
-        setRetainInstance(true);
+//        setRetainInstance(true);
         mFetchItemTask = new FetchItemTask();
         mFetchItemTask.execute(mPage);
         Handler repsonseHandler = new Handler();
@@ -73,53 +73,56 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
-        mPhotoRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_photo_gallery_recycler_view);
-        mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                int width = mPhotoRecyclerView.getWidth();
-                int gridColumnWidthPx = (int) TypedValue.applyDimension(COMPLEX_UNIT_DIP, mGridColumnWidthDp, getResources().getDisplayMetrics());
-                int columns = width / gridColumnWidthPx;
-                Log.d(TAG, "columns = " + columns);
-                mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), columns));
-                mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
-        mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
-        mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            /**
-             * @param recyclerView
-             * @param newState
-             * //正在滚动  SCROLL_STATE_IDLE = 0;
-             * //正在被外部拖拽,一般为用户正在用手指滚动  SCROLL_STATE_DRAGGING = 1;
-             * //自动滚动开始  SCROLL_STATE_SETTLING = 2;
-             */
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                Log.d(TAG, "onScrollStateChanged() newState = " + newState);
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-                int lastCompletelyVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
-                Log.d(TAG, "onScrolled() lastCompletelyVisibleItemPosition = " + lastCompletelyVisibleItemPosition);
-                if (mAdapter.getItemCount() - 1 == lastCompletelyVisibleItemPosition) {
-
-                    mPage++;
-                    if (mPage > 10) {
-                        Toast.makeText(getActivity(), "No more data.", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                    Log.d(TAG, "onScrolled() 请求第" + mPage + "页");
-                    new FetchItemTask().execute(mPage);
+        if (mPhotoRecyclerView == null) {
+            mPhotoRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_photo_gallery_recycler_view);
+            mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    int width = mPhotoRecyclerView.getWidth();
+                    int gridColumnWidthPx = (int) TypedValue.applyDimension(COMPLEX_UNIT_DIP, mGridColumnWidthDp, getResources().getDisplayMetrics());
+                    int columns = width / gridColumnWidthPx;
+                    Log.d(TAG, "columns = " + columns);
+                    mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), columns));
+                    mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }
-            }
-        });
+            });
+            mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+            mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                /**
+                 * @param recyclerView
+                 * @param newState
+                 * //正在滚动  SCROLL_STATE_IDLE = 0;
+                 * //正在被外部拖拽,一般为用户正在用手指滚动  SCROLL_STATE_DRAGGING = 1;
+                 * //自动滚动开始  SCROLL_STATE_SETTLING = 2;
+                 */
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    Log.d(TAG, "onScrollStateChanged() newState = " + newState);
+                }
+
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+                    int lastCompletelyVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+                    Log.d(TAG, "onScrolled() lastCompletelyVisibleItemPosition = " + lastCompletelyVisibleItemPosition);
+                    if (mAdapter.getItemCount() - 1 == lastCompletelyVisibleItemPosition) {
+
+                        mPage++;
+                        if (mPage > 10) {
+                            Toast.makeText(getActivity(), "No more data.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        Log.d(TAG, "onScrolled() 请求第" + mPage + "页");
+                        new FetchItemTask().execute(mPage);
+                    }
+                }
+            });
+        }
+
         // 这里调用的目的是每次因设备旋转重新生成RecyclerView时,可重新为其配置对应的adapter
-        setupAdapter();
+//        setupAdapter();
         return view;
     }
 
@@ -162,7 +165,6 @@ public class PhotoGalleryFragment extends Fragment {
 
         @Override
         public PhotoHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//            TextView textView = new TextView(getActivity());
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_item, parent, false);
             return new PhotoHolder(view);
         }
@@ -170,7 +172,6 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
             GalleryItem galleryItem = mGalleryItems.get(position);
-//            holder.bindGalleryItem(galleryItem);
             Drawable drawable = getResources().getDrawable(R.drawable.bill_up_close);
             holder.bindDrawable(drawable);
             mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
@@ -184,18 +185,14 @@ public class PhotoGalleryFragment extends Fragment {
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
 
-        //        private TextView mTitleTextView;
         private ImageView mItemImageView;
 
         public PhotoHolder(View itemView) {
             super(itemView);
-//            mTitleTextView = (TextView) itemView;
             mItemImageView = (ImageView) itemView.findViewById(R.id.fragment_photo_gallery_image_view);
         }
 
-        public void bindGalleryItem(GalleryItem galleryItem) {
-//            mTitleTextView.setText(galleryItem.toString());
-        }
+
 
         public void bindDrawable(Drawable drawable) {
             mItemImageView.setImageDrawable(drawable);
