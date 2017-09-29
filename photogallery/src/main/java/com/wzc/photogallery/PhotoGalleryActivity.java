@@ -1,6 +1,7 @@
 package com.wzc.photogallery;
 
 import android.support.v4.app.Fragment;
+import android.view.Menu;
 
 public class PhotoGalleryActivity extends SingleFragmentActivity {
 
@@ -8,4 +9,6 @@ public class PhotoGalleryActivity extends SingleFragmentActivity {
     public Fragment createFragment() {
         return PhotoGalleryFragment.newInstance();
     }
+
+
 }

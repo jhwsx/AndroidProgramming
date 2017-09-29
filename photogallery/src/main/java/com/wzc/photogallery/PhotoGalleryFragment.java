@@ -10,9 +10,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -33,7 +37,6 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String API_KEY = "5f73a03dbc8c61d06a199b1c901c3069";
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
-    private FetchItemTask mFetchItemTask;
     private PhotoAdapter mAdapter;
     private int mPage = 1;
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
@@ -49,8 +52,8 @@ public class PhotoGalleryFragment extends Fragment {
         // Control whether a fragment instance is retained across Activity
         // re-creation (such as from a configuration change).
 //        setRetainInstance(true);
-        mFetchItemTask = new FetchItemTask();
-        mFetchItemTask.execute(mPage);
+        setHasOptionsMenu(true);
+        new FetchItemTask().execute(mPage);
         Handler repsonseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(repsonseHandler);
         mThumbnailDownloader.setThumbnailDownloadListener(
@@ -129,7 +132,6 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        mFetchItemTask.cancel(false);
     }
 
     @Override
@@ -144,6 +146,33 @@ public class PhotoGalleryFragment extends Fragment {
         mThumbnailDownloader.quit();
         Log.i(TAG, "Background thread destroyed");
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_photo_gallery,menu);
+        MenuItem menuItem = menu.findItem(R.id.menu_item_search);
+        SearchView searchView = (SearchView) menuItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d(TAG, "onQueryTextSubmit query = " + query);
+                updateItems();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d(TAG, "onQueryTextChange newText = " + newText);
+                return false;
+            }
+        });
+    }
+
+    private void updateItems() {
+        new FetchItemTask().execute();
+    }
+
 
     private void setupAdapter() {
         if (isAdded()) { // 判断是为了检查确认fragment已与目标activity相关联,进而保证getActivity()返回的结果不为空
@@ -210,13 +239,24 @@ public class PhotoGalleryFragment extends Fragment {
             if (isCancelled()) {
                 return new ArrayList<>();
             }
-            return new FlickrFetchr().fetchItems(params[0]);
+            String query = "shanghai";
+            if (query == null) {
+                return new FlickrFetchr().fetchRecentPhotos(params[0]);
+            } else {
+                return new FlickrFetchr().searchPhotos(query);
+            }
+//            return new FlickrFetchr().fetchItems(params[0]);
         }
 
         @Override
         protected void onPostExecute(List<GalleryItem> items) {
             super.onPostExecute(items);
-            mItems.addAll(items);
+            String query = "shanghai";
+            if (query == null) {
+                mItems.addAll(items);
+            } else {
+                mItems = items;
+            }
             // 每次模型数据发生变化时,为recyclerview配置adapter
             setupAdapter();
         }
