@@ -53,7 +53,7 @@ public class PhotoGalleryFragment extends Fragment {
         // re-creation (such as from a configuration change).
 //        setRetainInstance(true);
         setHasOptionsMenu(true);
-        new FetchItemTask().execute(mPage);
+        updateItems();
         Handler repsonseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(repsonseHandler);
         mThumbnailDownloader.setThumbnailDownloadListener(
@@ -118,7 +118,7 @@ public class PhotoGalleryFragment extends Fragment {
                             return;
                         }
                         Log.d(TAG, "onScrolled() 请求第" + mPage + "页");
-                        new FetchItemTask().execute(mPage);
+                        updateItems();
                     }
                 }
             });
@@ -150,13 +150,14 @@ public class PhotoGalleryFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.fragment_photo_gallery,menu);
+        inflater.inflate(R.menu.fragment_photo_gallery, menu);
         MenuItem menuItem = menu.findItem(R.id.menu_item_search);
-        SearchView searchView = (SearchView) menuItem.getActionView();
+        final SearchView searchView = (SearchView) menuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Log.d(TAG, "onQueryTextSubmit query = " + query);
+                QueryPreferences.setStoredQuery(getActivity(), query);
                 updateItems();
                 return true;
             }
@@ -167,10 +168,31 @@ public class PhotoGalleryFragment extends Fragment {
                 return false;
             }
         });
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String query = QueryPreferences.getStoredQuery(getActivity());
+                searchView.setQuery(query, false);
+            }
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_clear:
+                QueryPreferences.setStoredQuery(getActivity(),null);
+                updateItems();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     private void updateItems() {
-        new FetchItemTask().execute();
+        String query = QueryPreferences.getStoredQuery(getActivity());
+        new FetchItemTask(query).execute(mPage);
     }
 
 
@@ -222,7 +244,6 @@ public class PhotoGalleryFragment extends Fragment {
         }
 
 
-
         public void bindDrawable(Drawable drawable) {
             mItemImageView.setImageDrawable(drawable);
         }
@@ -232,18 +253,22 @@ public class PhotoGalleryFragment extends Fragment {
     // Progress, the type of the progress units published during the background computation.
     // Result, the type of the result of the background computation.
     private class FetchItemTask extends AsyncTask<Integer, Void, List<GalleryItem>> {
+        public FetchItemTask(String query) {
+            mQuery = query;
+        }
 
+        private String mQuery;
         @Override
         protected List<GalleryItem> doInBackground(Integer... params) {
 
             if (isCancelled()) {
                 return new ArrayList<>();
             }
-            String query = "shanghai";
-            if (query == null) {
+//            String query = "shanghai";
+            if (mQuery == null) {
                 return new FlickrFetchr().fetchRecentPhotos(params[0]);
             } else {
-                return new FlickrFetchr().searchPhotos(query);
+                return new FlickrFetchr().searchPhotos(mQuery);
             }
 //            return new FlickrFetchr().fetchItems(params[0]);
         }
@@ -251,11 +276,12 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         protected void onPostExecute(List<GalleryItem> items) {
             super.onPostExecute(items);
-            String query = "shanghai";
-            if (query == null) {
+//            String query = "shanghai";
+            if (mQuery == null) {
                 mItems.addAll(items);
             } else {
-                mItems = items;
+                mItems.clear();
+                mItems.addAll(items);
             }
             // 每次模型数据发生变化时,为recyclerview配置adapter
             setupAdapter();
