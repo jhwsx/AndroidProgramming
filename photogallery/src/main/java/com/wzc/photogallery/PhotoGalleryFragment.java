@@ -1,5 +1,6 @@
 package com.wzc.photogallery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -54,6 +55,10 @@ public class PhotoGalleryFragment extends Fragment {
 //        setRetainInstance(true);
         setHasOptionsMenu(true);
         updateItems();
+        // 启动后台服务
+        Intent i = PollService.newIntent(getActivity());
+        getActivity().startService(i);
+
         Handler repsonseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(repsonseHandler);
         mThumbnailDownloader.setThumbnailDownloadListener(

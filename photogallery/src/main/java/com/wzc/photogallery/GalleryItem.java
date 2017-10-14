@@ -7,6 +7,11 @@ package com.wzc.photogallery;
 public class GalleryItem {
 
     private String mCaption;
+
+    public String getId() {
+        return mId;
+    }
+
     private String mId;
     private String mUrl;
 
