@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -32,7 +31,7 @@ import static android.util.TypedValue.COMPLEX_UNIT_DIP;
  * Created by wzc on 2017/8/16.
  */
 
-public class PhotoGalleryFragment extends Fragment {
+public class PhotoGalleryFragment extends VisibleFragment {
     private static final String TAG = "PhotoGalleryFragment";
     private static final String API_KEY = "5f73a03dbc8c61d06a199b1c901c3069";
     private RecyclerView mPhotoRecyclerView;
