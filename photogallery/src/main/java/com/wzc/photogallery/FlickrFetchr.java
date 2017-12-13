@@ -153,6 +153,13 @@ public class FlickrFetchr {
             }
             String id = itemJSONObject.getString("id");
             galleryItem.setId(id);
+
+            if (!itemJSONObject.has("owner")) {
+                continue;
+            }
+            String owner = itemJSONObject.getString("owner");
+            galleryItem.setOwner(owner);
+
             if (!itemJSONObject.has("title")) {
                 continue;
             }

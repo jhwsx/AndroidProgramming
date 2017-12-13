@@ -1,5 +1,6 @@
 package com.wzc.photogallery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -193,7 +194,7 @@ public class PhotoGalleryFragment extends VisibleFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_item_clear:
-                QueryPreferences.setStoredQuery(getActivity(),null);
+                QueryPreferences.setStoredQuery(getActivity(), null);
                 updateItems();
                 return true;
             case R.id.menu_item_toggle_polling:
@@ -242,6 +243,7 @@ public class PhotoGalleryFragment extends VisibleFragment {
             GalleryItem galleryItem = mGalleryItems.get(position);
             Drawable drawable = getResources().getDrawable(R.drawable.bill_up_close);
             holder.bindDrawable(drawable);
+            holder.bindGalleryItem(galleryItem);
             mThumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
         }
 
@@ -251,18 +253,31 @@ public class PhotoGalleryFragment extends VisibleFragment {
         }
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder {
+    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mItemImageView;
+        private GalleryItem mGalleryItem;
 
         public PhotoHolder(View itemView) {
             super(itemView);
             mItemImageView = (ImageView) itemView.findViewById(R.id.fragment_photo_gallery_image_view);
+            itemView.setOnClickListener(this);
         }
 
 
         public void bindDrawable(Drawable drawable) {
             mItemImageView.setImageDrawable(drawable);
+        }
+
+        public void bindGalleryItem(GalleryItem galleryItem) {
+            mGalleryItem = galleryItem;
+        }
+
+        @Override
+        public void onClick(View v) {
+//            Intent intent = new Intent(Intent.ACTION_VIEW, mGalleryItem.getPhotoPageUri());
+            Intent intent = PhotoPageActivity.newIntent(getActivity(), mGalleryItem.getPhotoPageUri());
+            startActivity(intent);
         }
     }
 
@@ -275,6 +290,7 @@ public class PhotoGalleryFragment extends VisibleFragment {
         }
 
         private String mQuery;
+
         @Override
         protected List<GalleryItem> doInBackground(Integer... params) {
 
