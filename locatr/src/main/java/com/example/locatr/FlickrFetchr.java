@@ -73,7 +73,7 @@ public class FlickrFetchr {
             .appendQueryParameter("api_key", API_KEY)
             .appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
-            .appendQueryParameter("extras", "url_s")
+            .appendQueryParameter("extras", "url_s,geo")
             .build();
 
     private List<GalleryItem> downloadGalleryItems(String url) {
@@ -160,6 +160,8 @@ public class FlickrFetchr {
             }
             String url = itemJSONObject.getString("url_s");
             galleryItem.setUrl(url);
+            galleryItem.setLat(itemJSONObject.getDouble("latitude"));
+            galleryItem.setLon(itemJSONObject.getDouble("longitude"));
             items.add(galleryItem);
         }
 
